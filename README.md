@@ -21,7 +21,7 @@ openssl rand -hex 32
 cp .env.example .env
 
 # 3. Editar .env y poner tu OPENCLAW_GATEWAY_TOKEN
-nano .env
+vim .env
 
 # 4. Crear directorio de configuracion
 mkdir -p config
