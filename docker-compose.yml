@@ -1,0 +1,112 @@
+services:
+  clawdbot-ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: clawdbot-ubuntu:local
+    container_name: clawdbot-ubuntu
+    hostname: clawdbot-ubuntu
+    restart: unless-stopped
+    init: true
+    stdin_open: true  # Enables stdin for interactive TUI
+    tty: true         # Enables pseudo-TTY for interactive mode
+    
+    environment:
+      - NODE_ENV=production
+      - TZ=${TZ:-America/New_York}
+      # Token de seguridad (Generar con: openssl rand -hex 32)
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      # Configuracion de red
+      - OPENCLAW_GATEWAY_BIND=0.0.0.0
+      - OPENCLAW_GATEWAY_PORT=18789
+      # FIX: Fuerza a Node.js a preferir IPv4 sobre IPv6
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+
+    # Use host network mode to make gateway accessible from the host
+    # This bypasses Docker's network NAT and the gateway binds directly to host
+    network_mode: host
+
+    # ports are not needed with network_mode: host
+    # The gateway will listen directly on 18789 and 18790
+
+    volumes:
+      # 1. Persistencia de Configuracion y Memoria
+      - ./config:/home/nodeuser/.openclaw:rw
+      
+      # 2. Workspace Principal - "clawdbot projects"
+      # Monta el directorio del proyecto completo
+      - /home/lio/Projects/clawdbot:/home/nodeuser/.openclaw/workspace:rw
+      - /home/lio/Projects:/mnt/projects:rw
+      
+      # 3. CARPETAS COMPARTIDAS DEL SISTEMA (Solo Lectura - RO)
+      - ${HOME}/Documents:/mnt/documents:ro
+      - ${HOME}/Downloads:/mnt/downloads:ro
+      
+      # 4. VOLUNTADES OPCIONALES - Descomenta las que necesites:
+      # 
+      # A) Proyectos de desarrollo (lectura/escritura)
+      # - ${HOME}/dev:/mnt/dev:rw
+      #
+      # B) Repositorios Git (solo lectura recomendada)
+      # - ${HOME}/repos:/mnt/repos:ro
+      #
+      # C) Carpeta de salida para archivos generados
+      # - ${HOME}/Clawdbot_Output:/mnt/output:rw
+      #
+      # D) Docker socket (ATENCION: privilegios significativos)
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+      #
+      # E) SSH keys (solo lectura)
+      # - ${HOME}/.ssh:/home/nodeuser/.ssh:ro
+      #
+      # F) Configuracion personal (solo lectura)
+      # - ${HOME}/.gitconfig:/home/nodeuser/.gitconfig:ro
+      # - ${HOME}/.npmrc:/home/nodeuser/.npmrc:ro
+
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2'
+        reservations:
+          memory: 1G
+
+    # Seguridad adicional
+    security_opt:
+      - no-new-privileges:true
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "clawdbot", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Note: networks removed because network_mode: host is incompatible with it
+
+  # Servicio CLI opcional para gestionar el bot
+  clawdbot-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: clawdbot-ubuntu:local
+    container_name: clawdbot-ubuntu-cli
+    entrypoint: ["clawdbot"]
+    environment:
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - NODE_ENV=production
+    volumes:
+      - ./config:/home/nodeuser/.openclaw:rw
+      - /home/lio/Projects/clawdbot:/home/nodeuser/.openclaw/workspace:rw
+      - /home/lio/Projects:/mnt/projects:rw
+    profiles:
+      - cli
+    networks:
+      - clawdbot-ubuntu-network
+
+networks:
+  clawdbot-ubuntu-network:
+    name: clawdbot-ubuntu-network
+    driver: bridge
