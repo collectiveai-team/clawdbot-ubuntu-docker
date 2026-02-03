@@ -93,8 +93,8 @@ clawdbot-ubuntu/
 ### Niveles de Acceso
 
 1. **Configuracion (RW)** - Persistencia de memoria y configuracion
-2. **Workspace (RW)** - Area de trabajo principal: `/home/lio/Projects/clawdbot`
-3. **Projects (RW)** - Acceso a todos tus proyectos: `/home/lio/Projects`
+2. **Workspace (RW)** - Area de trabajo principal: `/home/YOUR_USER/Projects/clawdbot`
+3. **Projects (RW)** - Acceso a todos tus proyectos: `/home/YOUR_USER/Projects`
 4. **Sistema (RO)** - Documentos y Downloads solo lectura
 
 ## 📦 Volumentes Montados
@@ -102,8 +102,8 @@ clawdbot-ubuntu/
 ### Activos
 
 - `./config:/home/nodeuser/.openclaw` - Configuracion del bot
-- `/home/lio/Projects/clawdbot:/home/nodeuser/.openclaw/workspace` - Workspace
-- `/home/lio/Projects:/mnt/projects` - Todos tus proyectos
+- `/home/YOUR_USER/Projects/clawdbot:/home/nodeuser/.openclaw/workspace` - Workspace
+- `/home/YOUR_USER/Projects:/mnt/projects` - Todos tus proyectos
 - `${HOME}/Documents:/mnt/documents:ro` - Documentos (solo lectura)
 - `${HOME}/Downloads:/mnt/downloads:ro` - Descargas (solo lectura)
 
@@ -290,7 +290,7 @@ Si ves errores de permisos:
 
 ```bash
 # Asegurar propiedad correcta
-sudo chown -R 1000:1000 /home/lio/Projects/clawdbot-ubuntu/config
+sudo chown -R 1000:1000 /home/YOUR_USER/Projects/clawdbot-ubuntu/config
 ```
 
 ### Puerto Ocupado
