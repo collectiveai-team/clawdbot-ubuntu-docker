@@ -1,117 +1,117 @@
 # Clawdbot Ubuntu Docker Setup
 
-Configuracion Docker basada en Ubuntu 24.04 con Node 24 para ejecutar OpenClaw (Clawdbot).
+Docker configuration based on Ubuntu 24.04 with Node 24 to run OpenClaw (Clawdbot).
 
-## Caracteristicas
+## Features
 
 - **Base:** Ubuntu 24.04 LTS
-- **Node.js:** Version 24.x (ultima)
-- **Instalacion:** OpenClaw, OpenCode (opencode-ai) y ClawdHub via npm global
-- **Coding Agents:** Soporte para coding agents via ClawdHub
-- **Auto-actualizacion:** Skipped by default for speed (enable in start-clawdbot.sh)
-- **Usuario:** Corre como `nodeuser` (no root)
+- **Node.js:** Version 24.x (latest)
+- **Installation:** OpenClaw, OpenCode (opencode-ai), and ClawdHub via npm global
+- **Coding Agents:** Support for coding agents via ClawdHub
+- **Auto-update:** Skipped by default for speed (enable in start-clawdbot.sh)
+- **User:** Runs as `nodeuser` (non-root)
 
-## 🚀 Inicio Rapido
+## 🚀 Quick Start
 
 ```bash
-# 1. Generar token de seguridad
+# 1. Generate security token
 openssl rand -hex 32
 
-# 2. Crear archivo de configuracion
+# 2. Create configuration file
 cp .env.example .env
 
-# 3. Editar .env y poner tu OPENCLAW_GATEWAY_TOKEN
+# 3. Edit .env and initialize your OPENCLAW_GATEWAY_TOKEN
 vim .env
 
-# 4. Crear directorio de configuracion
+# 4. Create configuration directory
 mkdir -p config
 
-# 5. Construir e iniciar el contenedor (primera vez)
+# 5. Build and start the container (first time)
 docker compose up -d --build
 
-# 6. Ver logs
+# 6. View logs
 docker compose logs -f clawdbot-ubuntu
 
-# 7. Acceder al dashboard
+# 7. Access dashboard
 # http://localhost:18789
 ```
 
-## 🔑 Configuracion del Proveedor de IA (Primera Vez)
+## 🔑 AI Provider Configuration (First Time)
 
-La primera vez que inicies el contenedor, necesitas configurar tu proveedor de IA (Anthropic, OpenAI, etc.). Tienes dos opciones:
+The first time you start the container, you need to configure your AI provider (Anthropic, OpenAI, etc.). You have two options:
 
-### Opcion 1: Configurar desde el container en ejecucion
+### Option 1: Configure from the running container
 
 ```bash
-# Con el contenedor ya iniciado, ejecuta:
+# With the container already started, run:
 docker exec -it clawdbot-ubuntu openclaw agents add main
 ```
 
-### Opcion 2: Modo interactivo (recomendado para primera vez)
+### Option 2: Interactive mode (recommended for first time)
 
 ```bash
-# Detener el contenedor si esta corriendo
+# Stop the container if it is running
 docker compose down
 
-# Iniciar en modo interactivo (con acceso a TTY)
+# Start in interactive mode (with TTY access)
 docker compose run --service-ports clawdbot-ubuntu
 ```
 
-Este comando te mostrara un menu interactivo (TUI) donde podras:
-1. Seleccionar tu proveedor (Anthropic, OpenAI, etc.)
-2. Ingresar tu API key
-3. Configurar preferencias adicionales
+This command will show you an interactive menu (TUI) where you can:
+1. Select your provider (Anthropic, OpenAI, etc.)
+2. Enter your API key
+3. Configure additional preferences
 
-Despues de configurar, puedes detener con `Ctrl+C` y reiniciar normalmente con `docker compose up -d`.
+After configuring, you can stop with `Ctrl+C` and restart normally with `docker compose up -d`.
 
-## 📁 Estructura de Directorios
+## 📁 Directory Structure
 
 ```
 clawdbot-ubuntu/
-├── docker-compose.yml      # Configuracion principal
-├── Dockerfile             # Definicion de la imagen Ubuntu+Node24
-├── start-clawdbot.sh      # Script de inicio con auto-actualizacion
-├── .env.example          # Template de variables
-├── .env                  # Tu configuracion (NO commitear)
-├── config/               # Persistencia de OpenClaw
-└── README.md            # Este archivo
+├── docker-compose.yml      # Main configuration
+├── Dockerfile             # Ubuntu+Node24 image definition
+├── start-clawdbot.sh      # Startup script with auto-update
+├── .env.example          # Variable template
+├── .env                  # Your configuration (DO NOT commit)
+├── config/               # OpenClaw persistence
+└── README.md            # This file
 ```
 
-## 🔒 Seguridad
+## 🔒 Security
 
-### Medidas Implementadas
+### Implemented Measures
 
-- ✅ **Ubuntu 24.04 LTS:** Sistema base actualizado y estable
-- ✅ **Node 24:** Version LTS mas reciente
-- ✅ **Usuario no-root:** Ejecuta como `nodeuser` (UID 1000)
-- ✅ **No new privileges:** Previene escalada de privilegios
-- ✅ **Read-only mounts:** Carpetas del sistema montadas como solo-lectura
-- ✅ **Resource limits:** Limites de 4GB RAM y 2 CPUs
-- ✅ **Health check:** Verificacion automatica de salud del servicio
-- ✅ **Auto-actualizacion:** Siempre ejecuta la ultima version
+- ✅ **Ubuntu 24.04 LTS:** Updated and stable base system
+- ✅ **Node 24:** Most recent LTS version
+- ✅ **Non-root user:** Runs as `nodeuser` (UID 1000)
+- ✅ **No new privileges:** Prevents privilege escalation
+- ✅ **Read-only mounts:** System folders mounted as read-only
+- ✅ **Resource limits:** Limits of 4GB RAM and 2 CPUs
+- ✅ **Health check:** Automatic service health verification
+- ✅ **Auto-update:** Always runs the latest version
 
-### Niveles de Acceso
+### Access Levels
 
-1. **Configuracion (RW)** - Persistencia de memoria y configuracion
-2. **Workspace (RW)** - Area de trabajo principal: `/home/YOUR_USER/Projects/clawdbot`
-3. **Projects (RW)** - Acceso a todos tus proyectos: `/home/YOUR_USER/Projects`
-4. **Sistema (RO)** - Documentos y Downloads solo lectura
+1. **Configuration (RW)** - Memory persistence and configuration
+2. **Workspace (RW)** - Main workspace: `/home/YOUR_USER/Projects/clawdbot`
+3. **Projects (RW)** - Access to all your projects: `/home/YOUR_USER/Projects`
+4. **System (RO)** - Documents and Downloads read-only
 
-## 📦 Volumentes Montados
+## 📦 Mounted Volumes
 
-### Activos
+### Active
 
-- `./config:/home/nodeuser/.openclaw` - Configuracion del bot
+- `./config:/home/nodeuser/.openclaw` - Bot configuration
 - `/home/YOUR_USER/Projects/clawdbot:/home/nodeuser/.openclaw/workspace` - Workspace
-- `/home/YOUR_USER/Projects:/mnt/projects` - Todos tus proyectos
-- `${HOME}/Documents:/mnt/documents:ro` - Documentos (solo lectura)
-- `${HOME}/Downloads:/mnt/downloads:ro` - Descargas (solo lectura)
+- `/home/YOUR_USER/Projects:/mnt/projects` - All your projects
+- `${HOME}/Documents:/mnt/documents:ro` - Documents (read-only)
+- `${HOME}/Downloads:/mnt/downloads:ro` - Downloads (read-only)
 
-### Opcionales (Comentados)
+### Optional (Commented)
 
-- `${HOME}/dev:/mnt/dev:rw` - Proyectos de desarrollo
-- `${HOME}/repos:/mnt/repos:ro` - Repositorios Git
-- `${HOME}/Clawdbot_Output:/mnt/output:rw` - Archivos generados
+- `${HOME}/dev:/mnt/dev:rw` - Development projects
+- `${HOME}/repos:/mnt/repos:ro` - Git repositories
+- `${HOME}/Clawdbot_Output:/mnt/output:rw` - Generated files
 - `/var/run/docker.sock:/var/run/docker.sock:ro` - Docker socket
 - `${HOME}/.ssh:/home/nodeuser/.ssh:ro` - SSH keys
 - `${HOME}/.gitconfig:/home/nodeuser/.gitconfig:ro` - Git config
@@ -154,222 +154,222 @@ clawdbot-tui
 
 ## 🤖 OpenCode & ClawdHub Setup
 
-El contenedor incluye **OpenCode** y **ClawdHub** preinstalados para capacidades avanzadas de coding agents.
+The container includes **OpenCode** and **ClawdHub** pre-installed for advanced coding agent capabilities.
 
-### Configurar Coding Agent
+### Configure Coding Agent
 
-1. **Accede al contenedor como nodeuser:**
+1. **Access the container as nodeuser:**
 
 ```bash
 docker exec --user nodeuser -it clawdbot-ubuntu bash
 ```
 
-2. **Desde el workspace (`/home/nodeuser/.openclaw/workspace`), ejecuta:**
+2. **From the workspace (`/home/nodeuser/.openclaw/workspace`), run:**
 
 ```bash
 cd /home/nodeuser/.openclaw/workspace
 clawdhub install coding-agent
 ```
 
-Esto instalará y configurará el coding agent en tu workspace.
+This will install and configure the coding agent in your workspace.
 
-### Verificar Instalación
+### Verify Installation
 
 ```bash
-# Ver versión de OpenCode
+# Check OpenCode version
 docker exec --user nodeuser clawdbot-ubuntu opencode --version
 
-# Ver versión de ClawdHub
+# Check ClawdHub version
 docker exec --user nodeuser clawdbot-ubuntu clawdhub --version
 
-# Listar agents instalados
+# List installed agents
 docker exec --user nodeuser clawdbot-ubuntu clawdhub list
 ```
 
-### Uso de OpenCode
+### Using OpenCode
 
 ```bash
-# Iniciar OpenCode en modo interactivo
+# Start OpenCode in interactive mode
 docker exec --user nodeuser -it clawdbot-ubuntu opencode
 
-# O desde dentro del contenedor
+# Or from inside the container
 docker exec --user nodeuser -it clawdbot-ubuntu bash
 cd /home/nodeuser/.openclaw/workspace
 opencode
 ```
 
-## 🔧 Comandos Utiles
+## 🔧 Useful Commands
 
-### Gestion del Servicio
+### Service Management
 
 ```bash
-# Construir e iniciar (primera vez)
+# Build and start (first time)
 docker-compose up -d --build
 
-# Solo iniciar (si ya esta construido)
+# Start only (if already built)
 docker-compose up -d
 
-# Detener
+# Stop
 docker-compose down
 
-# Reiniciar
+# Restart
 docker-compose restart
 
-# Ver logs en tiempo real
+# View real-time logs
 docker-compose logs -f clawdbot-ubuntu
 
-# Ver estado
+# View status
 docker-compose ps
 ```
 
-### Acceder al Contenedor
+### Accessing the Container
 
-> ⚠️ **IMPORTANTE:** El gateway corre como `nodeuser`. Para que los cambios de configuración
-> surtan efecto, siempre usa `--user nodeuser` al ejecutar comandos `docker exec`.
-> Si ejecutas como root (por defecto), la configuración se guarda en `/root/.openclaw/`
-> en lugar de `/home/nodeuser/.openclaw/` y el gateway no la verá.
+> ⚠️ **IMPORTANT:** The gateway runs as `nodeuser`. For configuration changes
+> to take effect, always use `--user nodeuser` when running `docker exec` commands.
+> If you run as root (default), the configuration is saved in `/root/.openclaw/`
+> instead of `/home/nodeuser/.openclaw/` and the gateway will not see it.
 
 ```bash
-# Shell interactivo (como nodeuser - RECOMENDADO)
+# Interactive shell (as nodeuser - RECOMMENDED)
 docker exec --user nodeuser -it clawdbot-ubuntu bash
 
-# Ejecutar comandos openclaw (como nodeuser)
-docker exec --user nodeuser clawdbot-ubuntu openclaw <comando>
+# Run openclaw commands (as nodeuser)
+docker exec --user nodeuser clawdbot-ubuntu openclaw <command>
 
-# Ejemplos:
+# Examples:
 docker exec --user nodeuser clawdbot-ubuntu openclaw models status
 docker exec --user nodeuser clawdbot-ubuntu openclaw models set openai-codex/gpt-5.2
 docker exec --user nodeuser clawdbot-ubuntu openclaw agents list
 
-# Como root (solo para debugging - NO para configuración)
+# As root (only for debugging - NOT for configuration)
 docker exec --user root -it clawdbot-ubuntu bash
 ```
 
-### Uso del CLI
+### CLI Usage
 
 ```bash
-# Ejecutar comandos de clawdbot
-docker-compose --profile cli run --rm clawdbot-cli <comando>
+# Run clawdbot commands
+docker-compose --profile cli run --rm clawdbot-cli <command>
 
-# Ejemplos:
+# Examples:
 docker-compose --profile cli run --rm clawdbot-cli onboard
 docker-compose --profile cli run --rm clawdbot-cli status
 docker-compose --profile cli run --rm clawdbot-cli channels list
 ```
 
-### Actualizar Manualmente
+### Manual Update
 
 ```bash
-# El contenedor ya se actualiza automaticamente al iniciar,
-# pero si necesitas forzar una actualizacion:
+# The container already updates automatically on startup,
+# but if you need to force an update:
 docker exec --user nodeuser clawdbot-ubuntu npm update -g openclaw
 docker restart clawdbot-ubuntu
 ```
 
-### Configurar Modelo
+### Configure Model
 
 ```bash
-# Ver modelo actual y estado de autenticación
+# View current model and authentication status
 docker exec --user nodeuser clawdbot-ubuntu openclaw models status
 
-# Listar modelos disponibles
+# List available models
 docker exec --user nodeuser clawdbot-ubuntu openclaw models list
 
-# Cambiar modelo por defecto
+# Change default model
 docker exec --user nodeuser clawdbot-ubuntu openclaw models set openai-codex/gpt-5.2
 
-# Después de cambiar el modelo, reinicia el gateway:
+# After changing the model, restart the gateway:
 docker restart clawdbot-ubuntu
 ```
 
-## 🛠️ Resolucion de Problemas
+## 🛠️ Troubleshooting
 
-### Permisos (EACCES)
+### Permissions (EACCES)
 
-Si ves errores de permisos:
+If you see permission errors:
 
 ```bash
-# Asegurar propiedad correcta
+# Ensure correct ownership
 sudo chown -R 1000:1000 /home/YOUR_USER/Projects/clawdbot-ubuntu/config
 ```
 
-### Puerto Ocupado
+### Port Occupied
 
-Si el puerto 18789 esta en uso:
+If port 18789 is in use:
 
 ```bash
-# Ver que proceso lo usa
+# See which process is using it
 sudo lsof -i :18789
 
-# Matar el proceso o cambiar el puerto en .env
+# Kill the process or change the port in .env
 ```
 
-### Reconstruir la Imagen
+### Rebuild Image
 
 ```bash
-# Limpiar y reconstruir desde cero
+# Clean and rebuild from scratch
 docker-compose down
 docker rmi clawdbot-ubuntu:local
 docker-compose up -d --build
 ```
 
-### Modelo No Se Aplica (TUI muestra modelo incorrecto)
+### Model Not Applied (TUI shows incorrect model)
 
-Si configuraste un modelo pero el TUI sigue mostrando otro:
+If you configured a model but the TUI still shows another one:
 
 ```bash
-# El problema es que docker exec corre como root por defecto,
-# guardando la config en /root/.openclaw/ en vez de /home/nodeuser/.openclaw/
+# The problem is that docker exec runs as root by default,
+# saving the config in /root/.openclaw/ instead of /home/nodeuser/.openclaw/
 
-# Verificar que modelo ve nodeuser (el correcto):
+# Verify what model nodeuser sees (the correct one):
 docker exec --user nodeuser clawdbot-ubuntu openclaw models status
 
-# Si muestra el modelo incorrecto, configurarlo como nodeuser:
-docker exec --user nodeuser clawdbot-ubuntu openclaw models set <tu-modelo>
+# If it shows the incorrect model, configure it as nodeuser:
+docker exec --user nodeuser clawdbot-ubuntu openclaw models set <your-model>
 
-# Reiniciar el gateway para aplicar cambios:
+# Restart the gateway to apply changes:
 docker restart clawdbot-ubuntu
 ```
 
-### Ver Version Instalada
+### View Installed Version
 
 ```bash
 docker exec --user nodeuser clawdbot-ubuntu openclaw --version
 docker exec --user nodeuser clawdbot-ubuntu node --version
 ```
 
-## 📚 Diferencias con el Setup Oficial
+## 📚 Differences from Official Setup
 
-| Caracteristica | Setup Oficial | Ubuntu Setup |
+| Feature | Official Setup | Ubuntu Setup |
 |----------------|---------------|--------------|
 | **Base** | Node:22-bookworm | Ubuntu 24.04 |
 | **Node** | 22.x | 24.x |
-| **Instalacion** | Desde source (build) | npm global |
-| **Actualizacion** | Manual | Auto (startup) |
-| **Tamaño** | ~500MB | ~700MB |
-| **Herramientas** | Minimo | Full Ubuntu tools |
+| **Installation** | From source (build) | npm global |
+| **Update** | Manual | Auto (startup) |
+| **Size** | ~500MB | ~700MB |
+| **Tools** | Minimal | Full Ubuntu tools |
 
-## 📖 Documentacion
+## 📖 Documentation
 
 - [OpenClaw Docs](https://docs.openclaw.ai)
 - [Ubuntu 24.04 LTS](https://ubuntu.com/download/server)
 - [Node.js 24](https://nodejs.org/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
-## ⚠️ Notas Importantes
+## ⚠️ Important Notes
 
-1. **NO** commitees el archivo `.env` - contiene tu token secreto
-2. El contenedor se actualiza automaticamente al iniciar (`npm update -g openclaw`)
-3. La primera ejecucion puede tardar mas debido a la actualizacion
-4. El workspace tiene acceso completo a `/home/lio/Projects`
-5. Puertos expuestos: 18789 (API), 18790 (Bridge)
+1. **DO NOT** commit the `.env` file - it contains your secret token
+2. The container updates automatically on startup (`npm update -g openclaw`)
+3. The first execution may take longer due to the update
+4. The workspace has full access to `/home/lio/Projects`
+5. Exposed ports: 18789 (API), 18790 (Bridge)
 
-## 🤝 Soporte
+## 🤝 Support
 
-Para soporte de OpenClaw:
+For OpenClaw support:
 - GitHub Issues: https://github.com/openclaw/openclaw/issues
-- Documentacion: https://docs.openclaw.ai
+- Documentation: https://docs.openclaw.ai
 
 ---
-**Version:** 1.0.0  
-**Fecha:** 2026-02-02
+**Version:** 1.0.0
+**Date:** 2026-02-02
